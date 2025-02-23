@@ -1,0 +1,39 @@
+# lightning.pytorch==2.0.0
+seed_everything: True
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: 32
+  logger:
+    class_path: TensorBoardLogger
+    init_args:
+      save_dir: 'logs'
+      name: 'visda'
+  log_every_n_steps: 5
+  max_epochs: 1
+  min_epochs: null
+  check_val_every_n_epoch: 1
+  enable_checkpointing: False
+model:
+  class_path: adaptation.COMET
+  init_args:
+    rejection_threshold: 0.5
+    feature_dim: 256
+    lr: 1e-3
+    ckpt_dir: 'source_models/visda/source_model_PDA/checkpoints/source_ckpt.pt'
+    cl_projection_dim: 128
+    cl_temperature: 0.1
+    lbd: 0.01
+    use_source_prototypes: False
+    loss_type: 'contrastive+entropy' # change to 'cross-entropy' for cross-entropy loss
+    pseudo_label_quantity: 1.0
+    pseudo_label_quality: 1.0
+    alpha_threshold: 1
+data:
+  class_path: datasets.VisDADataModule
+  init_args:
+    batch_size: 64
+    category_shift: 'PDA'
+
