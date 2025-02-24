@@ -166,7 +166,7 @@ class SourceModule(BaseModule):
         scheduler.step(iter_num=self.global_step)
 
     def training_step(self, train_batch):
-        x, y = train_batch
+        x, y, sample_ids = train_batch
         y_hat, _ = self.forward(x, apply_softmax=True)
         # transform y to one-hot encoding
         onehot_label = torch.zeros_like(y_hat).scatter(1, y.unsqueeze(1), 1)
@@ -180,7 +180,7 @@ class SourceModule(BaseModule):
         aggregated_class_features = torch.zeros(self.known_classes_num, self.feature_extractor.feature_dim)
         class_sample_counter = torch.zeros(self.known_classes_num)
 
-        for x, y in self.trainer.datamodule.train_dataloader():
+        for x, y, sample_ids in self.trainer.datamodule.train_dataloader():
             with torch.no_grad():
                 _, feature_embedding = self.forward(x.to(self.device))
                 feature_embedding = feature_embedding.cpu()
@@ -204,7 +204,7 @@ class SourceModule(BaseModule):
         }, self.trainer.log_dir + '/checkpoints/source_ckpt.pt')
 
     def test_step(self, test_batch, batch_idx):
-        x, y = test_batch
+        x, y, sample_ids = test_batch
         y = torch.where(y >= self.known_classes_num, self.known_classes_num, y)
         y_hat, feature_embedding = self.forward(x, apply_softmax=True)
 
